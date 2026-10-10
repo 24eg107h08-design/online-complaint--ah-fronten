@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Grievance Status | Online Complaint Management System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="css/styles.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3 sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+                <i class="bi bi-shield-check fs-4"></i>
+                <span>Grievance<span style="color:#60a5fa;">Portal</span></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="track.html">Track Grievance</a></li>
+                    <li class="nav-item"><a class="nav-link" href="submit-complaint.html">Lodge Grievance</a></li>
+                </ul>
+
+                <ul class="navbar-nav align-items-center" id="nav-auth-container">
+                    <!-- auth.js -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header & Search Box -->
+    <header class="py-5 bg-white border-bottom shadow-sm">
+        <div class="container">
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-8">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill fw-semibold mb-2">
+                        <i class="bi bi-search me-1"></i> Public Tracking Portal
+                    </span>
+                    <h2 class="fw-bold mb-2">Track Grievance Progress Live</h2>
+                    <p class="text-muted small mb-4">Anyone with the unique Complaint ID can monitor resolution progress, department remarks, and timeline.</p>
+
+                    <!-- Search Form -->
+                    <form id="trackForm" class="d-flex justify-content-center">
+                        <div class="input-group input-group-lg shadow-sm" style="max-width: 580px;">
+                            <span class="input-group-text bg-light"><i class="bi bi-hash fs-4 text-muted"></i></span>
+                            <input type="text" class="form-control" id="search-complaint-code" placeholder="Enter Complaint ID (e.g. CMP-20261001-1001)" required>
+                            <button class="btn btn-primary px-4 fw-semibold" type="submit" id="btn-track-submit">
+                                <i class="bi bi-search me-1"></i> Track
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Sample ID Badges for Demo Presentation -->
+                    <div class="mt-3">
+                        <span class="small text-muted me-2">Sample IDs:</span>
+                        <a href="track.html?code=CMP-20261001-1001" class="badge text-bg-light text-primary border text-decoration-none me-1">CMP-20261001-1001 (In Progress)</a>
+                        <a href="track.html?code=CMP-20261002-2002" class="badge text-bg-light text-success border text-decoration-none me-1">CMP-20261002-2002 (Resolved)</a>
+                        <a href="track.html?code=CMP-20261003-3003" class="badge text-bg-light text-warning border text-decoration-none">CMP-20261003-3003 (Submitted)</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Results Section -->
+    <main class="py-5">
+        <div class="container">
+            <!-- Not Found Alert -->
+            <div id="not-found-result" class="row justify-content-center d-none">
+                <div class="col-lg-6 text-center py-5">
+                    <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-inline-flex align-items-center justify-content-center mb-3" style="width:64px; height:64px; font-size:2rem;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <h4 class="fw-bold">Complaint Not Found</h4>
+                    <p class="text-muted">No grievance record was found matching ID: <code class="fw-bold" id="searched-code-placeholder"></code>.</p>
+                    <p class="text-muted small">Please verify the code format (e.g. <code>CMP-YYYYMMDD-XXXX</code>) and try again.</p>
+                </div>
+            </div>
+
+            <!-- Tracking Card -->
+            <div id="tracking-result" class="row justify-content-center d-none">
+                <div class="col-lg-10">
+                    <!-- Top Status & Code Card -->
+                    <div class="card custom-card shadow-sm mb-4">
+                        <div class="card-body p-4 p-md-5">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 border-bottom pb-4 mb-4">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="fs-4 fw-bold font-monospace text-primary" id="display-complaint-code">CMP-XXXXX</span>
+                                        <span id="display-status-badge"></span>
+                                    </div>
+                                    <h4 class="fw-bold text-dark mb-1" id="display-title">Complaint Title</h4>
+                                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                                        <span id="display-category"></span>
+                                        <span class="text-muted small"><i class="bi bi-geo-alt-fill text-danger me-1"></i><span id="display-location">Location</span></span>
+                                    </div>
+                                </div>
+
+                                <div class="text-md-end text-muted small">
+                                    <div>Lodged on: <strong class="text-dark" id="display-created-at">--</strong></div>
+                                    <div>Last Updated: <strong class="text-dark" id="display-updated-at">--</strong></div>
+                                </div>
+                            </div>
+
+                            <!-- Stepper Progress Bar -->
+                            <div class="steps-progress-bar">
+                                <div class="step-progress-line" id="step-progress-line" style="width: 20%;"></div>
+                                
+                                <div class="step-node active" id="step-node-submitted">
+                                    <div class="step-circle"><i class="bi bi-file-earmark-check"></i></div>
+                                    <div class="step-title">Submitted</div>
+                                    <small class="text-muted d-none d-sm-block">Complaint registered</small>
+                                </div>
+
+                                <div class="step-node" id="step-node-progress">
+                                    <div class="step-circle"><i class="bi bi-gear"></i></div>
+                                    <div class="step-title">In Progress</div>
+                                    <small class="text-muted d-none d-sm-block">Assigned to team</small>
+                                </div>
+
+                                <div class="step-node" id="step-node-final">
+                                    <div class="step-circle"><i class="bi bi-flag"></i></div>
+                                    <div class="step-title" id="step-title-final">Resolved</div>
+                                    <small class="text-muted d-none d-sm-block">Final verification</small>
+                                </div>
+                            </div>
+
+                            <!-- Resolution Remarks Alert if Available -->
+                            <div id="resolution-remarks-container" class="alert alert-info border-info-subtle d-none mt-4">
+                                <div class="d-flex gap-2">
+                                    <i class="bi bi-chat-left-dots-fill fs-5 text-info"></i>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">Official Resolution Remarks</h6>
+                                        <p class="mb-0 small" id="display-resolution-remarks"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Details Grid -->
+                            <div class="row g-4 mt-2">
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-3 border h-100">
+                                        <h6 class="fw-bold text-uppercase text-muted small mb-3">Grievance Description</h6>
+                                        <p class="small text-dark mb-0" id="display-description" style="white-space: pre-line;">--</p>
+
+                                        <!-- Attachment Link -->
+                                        <div id="attachment-container" class="mt-3 pt-3 border-top d-none">
+                                            <span class="small text-muted d-block mb-1">Supporting Document:</span>
+                                            <a href="#" id="attachment-download-link" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-paperclip me-1"></i>View Attachment
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-3 border h-100">
+                                        <h6 class="fw-bold text-uppercase text-muted small mb-3">Department & Assignment</h6>
+                                        <ul class="list-unstyled small mb-0">
+                                            <li class="mb-2 d-flex justify-content-between">
+                                                <span class="text-muted">Assigned Department:</span>
+                                                <span class="fw-semibold text-dark" id="display-department">--</span>
+                                            </li>
+                                            <li class="mb-2 d-flex justify-content-between">
+                                                <span class="text-muted">Assigned Officer:</span>
+                                                <span class="fw-semibold text-dark" id="display-staff">--</span>
+                                            </li>
+                                            <li id="citizen-info-row" class="d-flex justify-content-between d-none">
+                                                <span class="text-muted">Complainant:</span>
+                                                <span class="fw-semibold text-dark"><span id="display-citizen-name">--</span> (<span id="display-citizen-phone">--</span>)</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Audit Trail & Status History Timeline -->
+                    <div class="card custom-card shadow-sm p-4 p-md-5">
+                        <div class="d-flex align-items-center gap-2 mb-4 border-bottom pb-3">
+                            <i class="bi bi-clock-history text-primary fs-4"></i>
+                            <h5 class="fw-bold mb-0">Detailed Audit Trail & Status History</h5>
+                        </div>
+
+                        <div class="tracking-timeline" id="history-timeline">
+                            <!-- Populated dynamically by track.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/track.js"></script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Complaint Management System | Citizen Civic Portal</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3 sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+                <i class="bi bi-shield-check fs-4"></i>
+                <span>Grievance<span class="text-primary-light" style="color:#60a5fa;">Portal</span></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+                    <li class="nav-item"><a class="nav-link active" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="track.html">Track Complaint</a></li>
+                    <li class="nav-item"><a class="nav-link" href="submit-complaint.html">Lodge Complaint</a></li>
+                </ul>
+                <ul class="navbar-nav align-items-lg-center" id="nav-auth-container">
+                    <!-- Populated dynamically by auth.js -->
+                    <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+                    <li class="nav-item ms-lg-2"><a class="btn btn-outline-light btn-sm" href="register.html">Register</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <div class="container">
+            <div class="row align-items-center gy-5">
+                <div class="col-lg-7">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold mb-3">
+                        <i class="bi bi-patch-check-fill me-1"></i> Official Citizen Redressal System
+                    </span>
+                    <h1 class="hero-title mb-3">Fast, Transparent & Accountable Civic Redressal</h1>
+                    <p class="hero-subtitle mb-4">
+                        Report community issues directly to municipal departments. Track real-time progress from submission to resolution with full visibility.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="submit-complaint.html" class="btn btn-primary btn-lg px-4 py-2 fw-semibold shadow-sm">
+                            <i class="bi bi-megaphone-fill me-2"></i>Lodge a Complaint
+                        </a>
+                        <a href="track.html" class="btn btn-outline-light btn-lg px-4 py-2 fw-semibold">
+                            <i class="bi bi-search me-2"></i>Track by ID
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Track Card -->
+                <div class="col-lg-5">
+                    <div class="card quick-track-card p-4">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <i class="bi bi-geo-alt-fill text-primary fs-4"></i>
+                                <h5 class="card-title fw-bold mb-0">Track Existing Complaint</h5>
+                            </div>
+                            <p class="text-muted small mb-4">
+                                Enter your unique Complaint Tracking ID (e.g. <code>CMP-20261001-1001</code>) to check live status and department remarks.
+                            </p>
+                            <form action="track.html" method="GET">
+                                <div class="mb-3">
+                                    <label for="track-code-hero" class="form-label small fw-semibold text-muted">COMPLAINT ID</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="bi bi-hash"></i></span>
+                                        <input type="text" class="form-control form-control-lg" id="track-code-hero" name="code" placeholder="CMP-XXXXXXXX-XXXX" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                                    <i class="bi bi-search me-2"></i>Check Live Status
+                                </button>
+                            </form>
+                            <div class="mt-3 pt-3 border-top text-center">
+                                <span class="small text-muted">Need a quick demo? Try tracking: </span>
+                                <a href="track.html?code=CMP-20261001-1001" class="small fw-semibold text-primary">CMP-20261001-1001</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Key Metrics / Portal Highlights -->
+    <section class="py-5 bg-white border-bottom">
+        <div class="container">
+            <div class="row g-4 text-center">
+                <div class="col-6 col-md-3">
+                    <div class="p-3">
+                        <i class="bi bi-check-circle-fill text-success fs-1 mb-2"></i>
+                        <h3 class="fw-bold mb-1">98.4%</h3>
+                        <p class="text-muted small mb-0">Resolution Rate</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3">
+                        <i class="bi bi-clock-history text-primary fs-1 mb-2"></i>
+                        <h3 class="fw-bold mb-1">24 - 48h</h3>
+                        <p class="text-muted small mb-0">Avg. Initial Response</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3">
+                        <i class="bi bi-building-check text-info fs-1 mb-2"></i>
+                        <h3 class="fw-bold mb-1">6+</h3>
+                        <p class="text-muted small mb-0">Civic Departments</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3">
+                        <i class="bi bi-people-fill text-warning fs-1 mb-2"></i>
+                        <h3 class="fw-bold mb-1">100%</h3>
+                        <p class="text-muted small mb-0">Digital Audit Trail</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Complaint Categories -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="text-primary fw-semibold small text-uppercase">Supported Civic Services</span>
+                <h2 class="fw-bold">Report Issues Across Key Sectors</h2>
+                <p class="text-muted">Choose the appropriate category to automatically route complaints to specialized departments.</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 border-0 shadow-sm p-3 stat-card">
+                        <div class="card-body">
+                            <div class="stat-icon-wrapper bg-warning bg-opacity-10 text-warning mb-3">
+                                <i class="bi bi-lightning-charge-fill"></i>
+                            </div>
+                            <h5 class="fw-bold">Electricity</h5>
+                            <p class="text-muted small">Defective streetlights, power fluctuations, damaged transformers, and exposed wiring.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 border-0 shadow-sm p-3 stat-card">
+                        <div class="card-body">
+                            <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary mb-3">
+                                <i class="bi bi-droplet-fill"></i>
+                            </div>
+                            <h5 class="fw-bold">Water Supply</h5>
+                            <p class="text-muted small">Contaminated water supply, broken pipelines, low water pressure, and irregular timing.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 border-0 shadow-sm p-3 stat-card">
+                        <div class="card-body">
+                            <div class="stat-icon-wrapper bg-danger bg-opacity-10 text-danger mb-3">
+                                <i class="bi bi-cone-striped"></i>
+                            </div>
+                            <h5 class="fw-bold">Roads & Traffic</h5>
+                            <p class="text-muted small">Hazardous potholes, non-functional traffic lights, road caving, and unauthorized roadblocks.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 border-0 shadow-sm p-3 stat-card">
+                        <div class="card-body">
+                            <div class="stat-icon-wrapper bg-success bg-opacity-10 text-success mb-3">
+                                <i class="bi bi-trash-fill"></i>
+                            </div>
+                            <h5 class="fw-bold">Sanitation & Drainage</h5>
+                            <p class="text-muted small">Overflowing dumpsters, sewage blockage, uncollected waste, and stagnant water.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 border-0 shadow-sm p-3 stat-card">
+                        <div class="card-body">
+                            <div class="stat-icon-wrapper bg-info bg-opacity-10 text-info mb-3">
+                                <i class="bi bi-book-fill"></i>
+                            </div>
+                            <h5 class="fw-bold">Education</h5>
+                            <p class="text-muted small">Municipal school infrastructure, sanitization facilities, and basic civic learning needs.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 border-0 shadow-sm p-3 stat-card">
+                        <div class="card-body">
+                            <div class="stat-icon-wrapper bg-secondary bg-opacity-10 text-secondary mb-3">
+                                <i class="bi bi-grid-fill"></i>
+                            </div>
+                            <h5 class="fw-bold">Other Civic Grievances</h5>
+                            <p class="text-muted small">Encroachments, public noise nuisance, stray animals, and general civic issues.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Flow -->
+    <section class="py-5 bg-white border-top border-bottom">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="text-primary fw-semibold small text-uppercase">Transparent Workflow</span>
+                <h2 class="fw-bold">How The System Works</h2>
+                <p class="text-muted">A streamlined 3-step digital process ensuring timely resolution.</p>
+            </div>
+
+            <div class="row g-4 text-center">
+                <div class="col-md-4">
+                    <div class="p-3">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width:64px; height:64px; font-size:1.5rem; font-weight:700;">1</div>
+                        <h5 class="fw-bold">Submit Your Grievance</h5>
+                        <p class="text-muted small">Fill out the online form with category, precise location, and upload supporting photos or documents. A unique Complaint ID is instantly assigned.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3">
+                        <div class="rounded-circle bg-warning text-dark d-inline-flex align-items-center justify-content-center mb-3" style="width:64px; height:64px; font-size:1.5rem; font-weight:700;">2</div>
+                        <h5 class="fw-bold">Department Assignment</h5>
+                        <p class="text-muted small">The municipal administrator reviews the complaint, routes it to the designated department (e.g. Water Board, Electricity), and assigns field officers.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3">
+                        <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-3" style="width:64px; height:64px; font-size:1.5rem; font-weight:700;">3</div>
+                        <h5 class="fw-bold">Field Action & Resolution</h5>
+                        <p class="text-muted small">Officers rectify the issue on-site, record official resolution remarks, and update the status to RESOLVED with immediate notifications to the citizen.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-auto">
+        <div class="container text-center text-md-start">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <div class="fw-bold fs-5 mb-1"><i class="bi bi-shield-check text-primary me-2"></i>Online Complaint Management System</div>
+                    <p class="text-white-50 small mb-0">Empowering citizens with seamless digital grievance reporting and administrative transparency.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="track.html" class="text-white-50 small me-3 text-decoration-none hover-white">Track Grievance</a>
+                    <a href="submit-complaint.html" class="text-white-50 small me-3 text-decoration-none hover-white">Submit New</a>
+                    <a href="login.html" class="text-white-50 small text-decoration-none hover-white">Portal Login</a>
+                </div>
+            </div>
+            <hr class="border-secondary my-3">
+            <div class="small text-white-50 text-center">
+                &copy; 2026 Online Complaint Management System. Built with Java Spring Boot, MySQL, and JavaScript.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
