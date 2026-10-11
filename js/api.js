@@ -1,17 +1,13 @@
 /**
  * Online Complaint Management System - API Client & Utility Module
- * Handles centralized network requests, JWT token management, and UI notifications.
  */
 
 const API_CONFIG = {
-    BASE_URL: 'http://localhost:8080/api',
+    BASE_URL: `${window.location.origin}/api`,
     TOKEN_KEY: 'cms_jwt_token',
     USER_KEY: 'cms_user_data'
 };
 
-// -------------------------------------------------------------------
-// Authentication & Storage Helpers
-// -------------------------------------------------------------------
 const Auth = {
     getToken() {
         return localStorage.getItem(API_CONFIG.TOKEN_KEY);
@@ -22,10 +18,9 @@ const Auth = {
     },
 
     getUser() {
-        const userJson = localStorage.getItem(API_CONFIG.USER_KEY);
         try {
-            return userJson ? JSON.parse(userJson) : null;
-        } catch (e) {
+            return JSON.parse(localStorage.getItem(API_CONFIG.USER_KEY) || 'null');
+        } catch {
             return null;
         }
     },
@@ -40,10 +35,17 @@ const Auth = {
 
     isAdmin() {
         const user = this.getUser();
-        return user && user.role === 'ROLE_ADMIN';
+        return !!user && user.role === 'ROLE_ADMIN';
     },
 
     logout() {
+        const token = this.getToken();
+        if (token) {
+            fetch(`${API_CONFIG.BASE_URL}/auth/logout`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+            }).catch(error => console.error('Failed to end server session:', error));
+        }
         localStorage.removeItem(API_CONFIG.TOKEN_KEY);
         localStorage.removeItem(API_CONFIG.USER_KEY);
         window.location.href = 'login.html';
@@ -54,7 +56,7 @@ const Auth = {
             window.location.href = 'login.html';
             return false;
         }
-        if (allowedRole && allowedRole === 'ROLE_ADMIN' && !this.isAdmin()) {
+        if (allowedRole === 'ROLE_ADMIN' && !this.isAdmin()) {
             window.location.href = 'dashboard.html';
             return false;
         }
@@ -62,101 +64,57 @@ const Auth = {
     }
 };
 
-// -------------------------------------------------------------------
-// Centralized Network Request Wrapper
-// -------------------------------------------------------------------
-async function apiRequest(endpoint, options = {}) {
-    const url = `${API_CONFIG.BASE_URL}${endpoint}`;
-    const headers = options.headers || {};
-
-    const token = Auth.getToken();
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+async function parseApiResponse(response, fallbackMessage) {
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401 && Auth.getToken()) {
+        Auth.logout();
+        throw new Error('Your session has expired. Please login again.');
     }
+    if (!response.ok) {
+        let errorMessage = data.message || `${fallbackMessage} (${response.status})`;
+        if (data.validationErrors) {
+            errorMessage += `: ${Object.values(data.validationErrors).join(', ')}`;
+        }
+        throw new Error(errorMessage);
+    }
+    return data;
+}
 
+async function apiRequest(endpoint, options = {}) {
+    const headers = { ...options.headers };
+    const token = Auth.getToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
     if (!headers['Content-Type'] && !(options.body instanceof FormData)) {
         headers['Content-Type'] = 'application/json';
     }
 
-    const config = {
-        ...options,
-        headers
-    };
-
     try {
-        const response = await fetch(url, config);
-
-        // Handle session expiration
-        if (response.status === 401) {
-            Auth.logout();
-            throw new Error('Your session has expired. Please login again.');
-        }
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            // Validation errors map or general message
-            let errorMessage = data.message || `Request failed with status ${response.status}`;
-            if (data.validationErrors) {
-                const details = Object.values(data.validationErrors).join(', ');
-                errorMessage = `${errorMessage}: ${details}`;
-            }
-            throw new Error(errorMessage);
-        }
-
-        return data;
+        const response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, { ...options, headers });
+        return await parseApiResponse(response, 'Request failed');
     } catch (error) {
         console.error(`API Error on [${options.method || 'GET'} ${endpoint}]:`, error);
         throw error;
     }
 }
 
-// -------------------------------------------------------------------
-// Multipart Form Upload Request
-// -------------------------------------------------------------------
 async function apiMultipartRequest(endpoint, formData) {
-    const url = `${API_CONFIG.BASE_URL}${endpoint}`;
     const headers = {};
-
     const token = Auth.getToken();
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-    // Note: Do NOT set Content-Type header so browser sets multipart boundary automatically
+    if (token) headers.Authorization = `Bearer ${token}`;
 
     try {
-        const response = await fetch(url, {
+        const response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, {
             method: 'POST',
             headers,
             body: formData
         });
-
-        if (response.status === 401) {
-            Auth.logout();
-            throw new Error('Your session has expired. Please login again.');
-        }
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            let errorMessage = data.message || `Upload failed with status ${response.status}`;
-            if (data.validationErrors) {
-                const details = Object.values(data.validationErrors).join(', ');
-                errorMessage = `${errorMessage}: ${details}`;
-            }
-            throw new Error(errorMessage);
-        }
-
-        return data;
+        return await parseApiResponse(response, 'Upload failed');
     } catch (error) {
         console.error(`Multipart Upload Error on [${endpoint}]:`, error);
         throw error;
     }
 }
 
-// -------------------------------------------------------------------
-// Toast Alert Notification System
-// -------------------------------------------------------------------
 function showToast(message, type = 'info') {
     let container = document.getElementById('toast-container');
     if (!container) {
@@ -167,61 +125,67 @@ function showToast(message, type = 'info') {
         document.body.appendChild(container);
     }
 
-    const toastId = 'toast-' + Date.now();
-    const bgClass = {
-        success: 'text-bg-success',
-        error: 'text-bg-danger',
-        warning: 'text-bg-warning',
-        info: 'text-bg-primary'
-    }[type] || 'text-bg-secondary';
+    const styles = {
+        success: ['text-bg-success', 'bi-check-circle-fill'],
+        error: ['text-bg-danger', 'bi-exclamation-octagon-fill'],
+        warning: ['text-bg-warning', 'bi-exclamation-triangle-fill'],
+        info: ['text-bg-primary', 'bi-info-circle-fill']
+    };
+    const [background, icon] = styles[type] || ['text-bg-secondary', 'bi-bell-fill'];
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center ${background} border-0 shadow`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
 
-    const iconClass = {
-        success: 'bi-check-circle-fill',
-        error: 'bi-exclamation-octagon-fill',
-        warning: 'bi-exclamation-triangle-fill',
-        info: 'bi-info-circle-fill'
-    }[type] || 'bi-bell-fill';
+    const row = document.createElement('div');
+    row.className = 'd-flex';
+    const body = document.createElement('div');
+    body.className = 'toast-body d-flex align-items-center gap-2';
+    const iconElement = document.createElement('i');
+    iconElement.className = `bi ${icon} fs-5`;
+    const text = document.createElement('span');
+    text.textContent = message;
+    body.append(iconElement, text);
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'btn-close btn-close-white me-2 m-auto';
+    close.dataset.bsDismiss = 'toast';
+    close.setAttribute('aria-label', 'Close');
+    row.append(body, close);
+    toast.appendChild(row);
+    container.appendChild(toast);
 
-    const toastHtml = `
-        <div id="${toastId}" class="toast align-items-center ${bgClass} border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body d-flex align-items-center gap-2">
-                    <i class="bi ${iconClass} fs-5"></i>
-                    <span>${message}</span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    `;
-
-    container.insertAdjacentHTML('beforeend', toastHtml);
-    const toastEl = document.getElementById(toastId);
     if (window.bootstrap && window.bootstrap.Toast) {
-        const bsToast = new bootstrap.Toast(toastEl, { delay: 4500 });
-        bsToast.show();
-        toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+        const instance = new bootstrap.Toast(toast, { delay: 4500 });
+        toast.addEventListener('hidden.bs.toast', () => toast.remove());
+        instance.show();
     } else {
-        setTimeout(() => toastEl.remove(), 4500);
+        setTimeout(() => toast.remove(), 4500);
     }
 }
 
-// -------------------------------------------------------------------
-// Formatting & Badge Helpers
-// -------------------------------------------------------------------
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[character]);
+}
+
 function formatDate(dateStr) {
     if (!dateStr) return 'N/A';
-    try {
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    } catch (e) {
-        return dateStr;
-    }
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return String(dateStr);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 }
 
 function getStatusBadgeHtml(status) {
@@ -231,9 +195,9 @@ function getStatusBadgeHtml(status) {
         RESOLVED: 'bi-check-circle',
         REJECTED: 'bi-x-circle'
     };
-    const icon = icons[status] || 'bi-circle';
-    const cleanStatus = status ? status.replace('_', ' ') : 'UNKNOWN';
-    return `<span class="badge-status badge-${status}"><i class="bi ${icon}"></i> ${cleanStatus}</span>`;
+    const cleanStatus = status ? String(status).replaceAll('_', ' ') : 'UNKNOWN';
+    const safeStatus = /^[A-Z_]+$/.test(status || '') ? status : 'UNKNOWN';
+    return `<span class="badge-status badge-${safeStatus}"><i class="bi ${icons[safeStatus] || 'bi-circle'}"></i> ${escapeHtml(cleanStatus)}</span>`;
 }
 
 function getCategoryBadgeHtml(category) {
@@ -245,6 +209,5 @@ function getCategoryBadgeHtml(category) {
         Education: 'bi-book-fill text-info',
         Other: 'bi-tag-fill text-secondary'
     };
-    const icon = icons[category] || 'bi-tag-fill text-secondary';
-    return `<span class="badge badge-category"><i class="bi ${icon} me-1"></i>${category}</span>`;
+    return `<span class="badge badge-category"><i class="bi ${icons[category] || 'bi-tag-fill text-secondary'} me-1"></i>${escapeHtml(category || 'Other')}</span>`;
 }
